@@ -7,8 +7,9 @@ module Kubecontrol
 
     attr_accessor :namespace
 
-    def initialize(binary='kubectl', namespace = DEFAULT_NAMESPACE)
+    def initialize(kubeconfig_path, binary='kubectl', namespace = DEFAULT_NAMESPACE)
       @binary = binary
+      @kubeconfig_path = kubeconfig_path
       @namespace = namespace
     end
 
@@ -62,9 +63,16 @@ module Kubecontrol
       stateful_sets.find { |stateful_set| stateful_set.name.match?(name_regex) }
     end
 
+    def kubectl_command_dry(command, include_namespace = true)
+      namespace_option = include_namespace ? "--namespace '#{@namespace}'" : ''
+      "#{@binary} --kubeconfig '#{@kubeconfig_path}' #{namespace_option} #{command}"
+    end
+
     def kubectl_command(command, include_namespace = true)
-      namespace_option = include_namespace ? "--namespace #{@namespace}" : ''
-      stdout_data, stderr_data, status = Open3.capture3("#{@binary} #{namespace_option} #{command}")
+      namespace_option = include_namespace ? "--namespace '#{@namespace}'" : ''
+      cmd = "#{@binary} --kubeconfig '#{@kubeconfig_path}' #{namespace_option} #{command}"
+      puts cmd
+      stdout_data, stderr_data, status = Open3.capture3(cmd)
       exit_code = status.exitstatus
 
       [stdout_data, stderr_data, exit_code]
