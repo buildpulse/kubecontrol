@@ -68,10 +68,10 @@ module Kubecontrol
       "#{@binary} --kubeconfig '#{@kubeconfig_path}' #{namespace_option} #{command}"
     end
 
-    def kubectl_command(command, include_namespace = true)
+    def kubectl_command(command, include_namespace = true, print_cmd = true)
       namespace_option = include_namespace ? "--namespace '#{@namespace}'" : ''
       cmd = "#{@binary} --kubeconfig '#{@kubeconfig_path}' #{namespace_option} #{command}"
-      puts cmd
+      puts cmd if print_cmd
       stdout_data, stderr_data, status = Open3.capture3(cmd)
       exit_code = status.exitstatus
 
